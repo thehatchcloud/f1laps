@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "f1laps"
+version = "0.1.0"
+description = "Compare Formula 1 lap times across drivers, sessions and seasons"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "fastf1>=3.5",
+    "pandas>=2.1",
+    "apscheduler>=3.10,<4",
+    "pydantic-settings>=2.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+f1laps = "f1laps.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["f1laps*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
