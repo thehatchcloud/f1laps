@@ -1,0 +1,39 @@
+# Production stack: the app container plus Caddy as reverse proxy (automatic HTTPS).
+# Copied to the server by the deploy workflow; runs from /opt/f1laps.
+services:
+  app:
+    image: ${F1LAPS_IMAGE:-ghcr.io/thehatchcloud/f1laps:latest}
+    restart: unless-stopped
+    environment:
+      F1LAPS_SEASONS: ${F1LAPS_SEASONS:-2025,2026}
+      F1LAPS_REFRESH_DAYS: ${F1LAPS_REFRESH_DAYS:-fri,sat,sun}
+      F1LAPS_REFRESH_TIME: ${F1LAPS_REFRESH_TIME:-23:30}
+      F1LAPS_REFRESH_TZ: ${F1LAPS_REFRESH_TZ:-UTC}
+      F1LAPS_LOG_LEVEL: ${F1LAPS_LOG_LEVEL:-INFO}
+    volumes:
+      - f1laps-data:/data
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      # A domain name (e.g. f1laps.example.com) gives you automatic HTTPS.
+      # ":80" serves plain HTTP on the server's IP address.
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  f1laps-data:
+  caddy-data:
+  caddy-config:
